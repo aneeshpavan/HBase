@@ -1,71 +1,178 @@
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvValidationException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
-public class InsertData {
 
-    public static void main(String[] args) throws IOException {
-        Configuration config = HBaseConfiguration.create();
-        int lineCount = 0;
+public class InsertData  extends Configured implements Tool{
 
-        String[] headers = {"user_name", "user_location", "user_description", "user_created", "user_followers",
-                "user_friends", "user_favourites", "user_verified", "date", "text", "hashtags", "source", "is_retweet"};
+	private static String handleSpecialCharacters(String column) {
+        // Replace any backslash with double backslash
+        return column.replace("\\", "\\\\");
+    }
+  
+public String tableName = "Covid19tweets";
 
-        try (Connection connection = ConnectionFactory.createConnection(config);
-             Admin admin = connection.getAdmin()) {
+@SuppressWarnings("deprecation")
+@Override
+public int run(String[] argv) throws IOException, CsvValidationException {
+    Configuration conf = HBaseConfiguration.create();        
+    
+    try (Connection connection = ConnectionFactory.createConnection(conf);
+            Admin hbaseAdmin = connection.getAdmin()) {
+    @SuppressWarnings("resource")
+//	HBaseAdmin admin=new HBaseAdmin(conf);        
+    
+   
+    TableName hbaseTableName = TableName.valueOf(tableName);
+//    boolean isExists = admin.tableExists(tableName);
+    boolean isExists = admin.tableExists(hbaseTableName);
+    
+    if(isExists == false) {
+        //create table with column family
+        HTableDescriptor htb=new HTableDescriptor(tableName);
+        HColumnDescriptor UsersFamily = new HColumnDescriptor("Users");
+        HColumnDescriptor TweetsFamily = new HColumnDescriptor("Tweets");
+        HColumnDescriptor ExtraFamily = new HColumnDescriptor("Extra");
+        
+        htb.addFamily(UsersFamily);
+        htb.addFamily(TweetsFamily);
+        htb.addFamily(ExtraFamily);
+        admin.createTable(htb);
+    }
+    
+    
+    try(Table hbaseTable = connection.getTable(hbaseTableName);
+    		CSVReader csvReader = new CSVReaderBuilder(new FileReader("covid19_tweets.csv"))
+            .withSkipLines(1)
+            .withCSVParser(new CSVParserBuilder()
+                    // Set the separator (comma)
+                     // Set the text qualifier (double-quote)
+                    .withEscapeChar('\\') // Set the escape character (backslash)
+                    .build())
+                .build()){
 
-            TableName tableName = TableName.valueOf("tweets");
+        String[] line;
 
-            if (!admin.tableExists(tableName)) {
-                HTableDescriptor descriptor = new HTableDescriptor(tableName);
+	    int row_counter=0;
+        while ((line = csvReader.readNext()) != null) {
+        	   String joinedLine = String.join(" ", line);
+        	   
+        	   //System.out.println(joinedLine);
+        	if(line.length == 0)continue;
+        
+            // Loop through the columns in each row
+    /*      for (String column : line) {
+        	  String cleanedColumn = handleSpecialCharacters(column);
+              
+          System.out.print(cleanedColumn + "&5&");
+       } */
+            //	System.out.println();
+	    	
+	    	row_counter++;
+	    	
+	  //  System.out.println("+++++++++++++++++++++++++++++"+line.toString());
+	    	try {
+	    		System.out.println(line);
+		    	String user_name = (line[0] != null) ? line[0] : "";
+		    	String user_location =(line[1] != null) ? line[1] : ""; 
+		    	String user_description = (line[2] != null) ? line[2] : "";
+		    	String user_created = (line[3] != null) ? line[3] : "";
+		    	//System.out.println(user_name + "&&&" + "$$$"  + user_location + "&&&" + user_description);
+		    	//System.out.println("%%" +  user_created);
+		    	//String user_created = line[3];
+		    	int user_followers = (line[4] != null) ? (Integer.parseInt(line[4].trim())) : 0;
+		    	int user_friends = (line[5] != null) ? Integer.parseInt(line[5].trim()) : 0;
+		    	int user_favourites = (line[6] != null) ? Integer.parseInt(line[6].trim()) : 0;
+		    	String user_verified = (line[7] != null) ? line[7] : "";
+		    	
+		    	String text = (line[9] != null) ? line[9] : "";
+		    	String hashtags = (line[10] != null) ? line[10] : "";
+		    	String is_retweet = (line[12] != null) ? line[12] : "";
+		    	
+		    	String source = (line[11] != null) ? line[11] : "";
+		    	String date = (line[8] != null) ? line[8] : "";
+		    	
 
-                descriptor.addFamily(new HColumnDescriptor("Users"));
-                descriptor.addFamily(new HColumnDescriptor("Tweets"));
-                descriptor.addFamily(new HColumnDescriptor("Extra"));
-                
-                admin.createTable(descriptor);
-            }
-
-            try (Table table = connection.getTable(tableName);
-                 BufferedReader br = new BufferedReader(new FileReader("/home/ap43n/eclipse-workspace/HBase/covid19_tweets.csv"))) {
-
-                String line;
-                boolean isFirstLine = true;
-                while ((line = br.readLine()) != null) {
-                    if (isFirstLine) {
-                        isFirstLine = false;
-                        continue;
-                    }
-
-                    String[] columns = line.split("\t", -1);
-                    Put p = new Put(Bytes.toBytes(lineCount + "_" + (columns.length > 0 ? columns[0] : "unknown")));
-
-                    for (int i = 0; i < columns.length && i < headers.length; i++) {
-                        String family;
-                        if (i < 8) {
-                            family = "Users";
-                        } else if (i >= 8 && i < 11) {
-                            family = "Tweets";
-                        } else {
-                            family = "Extra";
-                        }
-
-                        p.addColumn(Bytes.toBytes(family), Bytes.toBytes(headers[i]), Bytes.toBytes(columns[i]));
-                    }
-
-                    table.put(p);
-                    lineCount++;
-                    if (lineCount % 1000 == 0) {  // Print every 1000 lines to help diagnose the issue
-                        System.out.println("Processed " + lineCount + " lines.");
-                    }
-                }
-            }
-
-            System.out.println("Total number of lines inserted: " + lineCount);
+		    	//String xyz = user_name + "&&&" + user_location + "&&&" + user_description + "&&&"  + user_created + "&&&" + user_followers + "&&&" + "&&&" + user_verified
+		    			//+ "&&&" + date + "&&& " + text + "&&&" + hashtags + "&&&" + source + "&&&" + is_retweet;
+		    	//System.out.println(xyz);
+		    	//initialize a put with row key as tweet_url
+	            Put data = new Put(Bytes.toBytes(row_counter));
+	            
+	            //add column data one after one
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes(user_name));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_location"), Bytes.toBytes(user_location));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_description"), Bytes.toBytes(user_description));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_created"), Bytes.toBytes(user_created));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_followers"), Bytes.toBytes(user_followers));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_friends"), Bytes.toBytes(user_friends));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_favourites"), Bytes.toBytes(user_favourites));
+	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_verified"), Bytes.toBytes(user_verified));
+	            
+	            put.addColumn(Bytes.toBytes("Tweets"), Bytes.toBytes("text"), Bytes.toBytes(text));
+	            put.addColumn(Bytes.toBytes("Tweets"), Bytes.toBytes("hashtags"), Bytes.toBytes(hashtags));
+	            put.addColumn(Bytes.toBytes("Tweets"), Bytes.toBytes("is_retweet"), Bytes.toBytes(is_retweet));
+	            
+	            put.addColumn(Bytes.toBytes("Extra"), Bytes.toBytes("source"), Bytes.toBytes(source));
+	          put.addColumn(Bytes.toBytes("Extra"), Bytes.toBytes("date"), Bytes.toBytes(date));
+	            
+	            //add the put in the table
+//		    	HTable hTable = new HTable(conf, tableName);
+		    	hbaseTable.put(data);
+		    	hbaseTable.close();   
+	           System.out.println("Row " + row_counter + " Inserted");// Move to the next row
+	    	}catch (ArrayIndexOutOfBoundsException e) {
+	    		System.out.println("On Row: Arrayexcept" + row_counter + " First Element:" + line[0]);
+	    	} catch (NumberFormatException e) { 
+	    		System.out.println("On Row: " + row_counter + " First Element:" + line[0]);
+	    		row_counter ++;
+	    	} catch (FileNotFoundException e) {
+	        	// TODO Auto-generated catch block
+	        	e.printStackTrace();
+	        } catch (IOException e) {
+	        	// TODO Auto-generated catch block
+	        	e.printStackTrace();
+	        }
+	      	}
+    			
         }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+  return 0;
+}
+
+    
+    public static void main(String[] argv) throws Exception {
+        int ret = ToolRunner.run(new InsertData (), argv);
+        System.exit(ret);
     }
 }
