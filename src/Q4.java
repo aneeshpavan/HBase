@@ -74,23 +74,23 @@ public class Q4 {
         }
         
         for (Map.Entry<String, Integer> entry : userCountByYear.entrySet()) {
-            System.out.println("Yeanot r: " + entry.getKey() + ", User Count: " + entry.getValue());
+            System.out.println("Number of users created in " + entry.getKey() + " : " + entry.getValue());
         }
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
         
         for (Map.Entry<String, Integer> entry : userCountOf2020.entrySet()) {
-            System.out.println("Month: " + entry.getKey() + ", User Count: " + entry.getValue());
+            System.out.println("Number of users created in year 2020 in Month " + entry.getKey() + " : "+ entry.getValue());
         }
         
-        System.out.println("Users verified");
+        System.out.println("-----------------------------------------------------------------------------------------------------------------");
         
         for (Map.Entry<String, Integer> entry : userCountByYearVerified.entrySet()) {
-            System.out.println("Year: " + entry.getKey() + ", User Count: " + entry.getValue());
+            System.out.println("Number of verified users created in " + entry.getKey() + " : " + entry.getValue());
         }
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
 
         for (Map.Entry<String, Integer> entry : userCountOf2020Verified.entrySet()) {
-            System.out.println("Month: " + entry.getKey() + ", User Count: " + entry.getValue());
+            System.out.println("Number of verifieed users created in year 2020 in Month " + entry.getKey() + " : " + entry.getValue());
         }
                 
         }

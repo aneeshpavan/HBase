@@ -37,26 +37,25 @@ public class InsertData  extends Configured implements Tool{
         return column.replace("\\", "\\\\");
     }
   
-public String tableName = "Covid19tweets";
-
+public String Table_Name = "Covid19tweets";
 @SuppressWarnings("deprecation")
 @Override
 public int run(String[] argv) throws IOException, CsvValidationException {
     Configuration conf = HBaseConfiguration.create();        
     
     try (Connection connection = ConnectionFactory.createConnection(conf);
-            Admin hbaseAdmin = connection.getAdmin()) {
+            Admin admin = connection.getAdmin()) {
     @SuppressWarnings("resource")
 //	HBaseAdmin admin=new HBaseAdmin(conf);        
     
    
-    TableName hbaseTableName = TableName.valueOf(tableName);
-//    boolean isExists = admin.tableExists(tableName);
-    boolean isExists = admin.tableExists(hbaseTableName);
+    TableName tableName = TableName.valueOf(Table_Name);
+//    boolean isExists = admin.tableExists(Table_Name);
+    boolean isExists = admin.tableExists(tableName);
     
     if(isExists == false) {
         //create table with column family
-        HTableDescriptor htb=new HTableDescriptor(tableName);
+        HTableDescriptor htb=new HTableDescriptor(Table_Name);
         HColumnDescriptor UsersFamily = new HColumnDescriptor("Users");
         HColumnDescriptor TweetsFamily = new HColumnDescriptor("Tweets");
         HColumnDescriptor ExtraFamily = new HColumnDescriptor("Extra");
@@ -68,7 +67,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
     }
     
     
-    try(Table hbaseTable = connection.getTable(hbaseTableName);
+    try(Table table = connection.getTable(tableName);
     		CSVReader csvReader = new CSVReaderBuilder(new FileReader("covid19_tweets.csv"))
             .withSkipLines(1)
             .withCSVParser(new CSVParserBuilder()
@@ -80,7 +79,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 
         String[] line;
 
-	    int row_counter=0;
+	    int row_count=0;
         while ((line = csvReader.readNext()) != null) {
         	   String joinedLine = String.join(" ", line);
         	   
@@ -95,11 +94,10 @@ public int run(String[] argv) throws IOException, CsvValidationException {
        } */
             //	System.out.println();
 	    	
-	    	row_counter++;
+	    	row_count++;
 	    	
 	  //  System.out.println("+++++++++++++++++++++++++++++"+line.toString());
 	    	try {
-	    		System.out.println(line);
 		    	String user_name = (line[0] != null) ? line[0] : "";
 		    	String user_location =(line[1] != null) ? line[1] : ""; 
 		    	String user_description = (line[2] != null) ? line[2] : "";
@@ -124,7 +122,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 		    			//+ "&&&" + date + "&&& " + text + "&&&" + hashtags + "&&&" + source + "&&&" + is_retweet;
 		    	//System.out.println(xyz);
 		    	//initialize a put with row key as tweet_url
-	            Put data = new Put(Bytes.toBytes(row_counter));
+	            Put put = new Put(Bytes.toBytes(row_count));
 	            
 	            //add column data one after one
 	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes(user_name));
@@ -144,15 +142,14 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 	          put.addColumn(Bytes.toBytes("Extra"), Bytes.toBytes("date"), Bytes.toBytes(date));
 	            
 	            //add the put in the table
-//		    	HTable hTable = new HTable(conf, tableName);
-		    	hbaseTable.put(data);
-		    	hbaseTable.close();   
-	           System.out.println("Row " + row_counter + " Inserted");// Move to the next row
-	    	}catch (ArrayIndexOutOfBoundsException e) {
-	    		System.out.println("On Row: Arrayexcept" + row_counter + " First Element:" + line[0]);
+//		    	HTable hTable = new HTable(conf, Table_Name);
+		    	table.put(put);
+		    	if(row_count % 1000 == 0) System.out.println("Inserted Rows: "+ row_count);
+ 	    	}catch (ArrayIndexOutOfBoundsException e) {
+	    		System.out.println("On Row: Arrayexcept" + row_count + " First Element:" + line[0]);
 	    	} catch (NumberFormatException e) { 
-	    		System.out.println("On Row: " + row_counter + " First Element:" + line[0]);
-	    		row_counter ++;
+	    		System.out.println("On Row: " + row_count + " First Element:" + line[0]);
+	    		row_count ++;
 	    	} catch (FileNotFoundException e) {
 	        	// TODO Auto-generated catch block
 	        	e.printStackTrace();
@@ -160,8 +157,10 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 	        	// TODO Auto-generated catch block
 	        	e.printStackTrace();
 	        }
+	    	table.close(); 
 	      	}
-    			
+    		System.out.println("Inserted Row: "+ row_count);
+    		System.out.println("Inserte all rows");
         }
     } catch (IOException e) {
         e.printStackTrace();

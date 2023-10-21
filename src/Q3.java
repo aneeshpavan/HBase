@@ -51,7 +51,8 @@ public class Q3 {
 
         // Print the count of tweets from each unique location
         for (Map.Entry<String, Integer> entry : locationCountMap.entrySet()) {
-            System.out.println("Location: " + entry.getKey() + ", Tweet Count: " + entry.getValue());
+            System.out.println("User's Location: " + entry.getKey() + ", Number of tweets: " + entry.getValue());
+
         }
         
     }

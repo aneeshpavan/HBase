@@ -57,14 +57,14 @@ public class Q5 {
        	}
        System.out.println("Users with Special Characters: ");
        for (String user : usersWithSpecialCharacters) {
-           System.out.println(user);
+           System.out.println("User with special character: "+user);
        }
 
        System.out.println("Total Users with Special Characters: " + usersWithSpecialCharacters.size());
 
        System.out.println("Users with Special Characters and verified: ");
        for (String user : usersWithSpecialCharactersVerified) {
-           System.out.println(user);
+           System.out.println("Verified user with special character: "+user);
        }
        System.out.println("Total Users with Special Characters and verified: " + usersWithSpecialCharactersVerified.size());
        

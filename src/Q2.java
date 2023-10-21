@@ -24,8 +24,8 @@ public static String tableName = "Covid19tweets";
 		//initialize a put with row key as tweet_url
 		Put data = new Put(Bytes.toBytes(rowKey));
 		
-		put.add(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes("type1"));
-		put.add(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes("type2"));
+		data.add(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes("type1"));
+		data.add(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes("type2"));
 		hbaseTable.put(data);
 	 
 		//initialize a ge with row key as tweet_url
@@ -40,7 +40,8 @@ public static String tableName = "Covid19tweets";
 		int i = 0;
 		for(KeyValue kv: allResults) {
 			
-			System.out.println(new String(kv.getValue())+"----------------------------"+i++);
+			System.out.println(new String(kv.getValue())+ " : "+i++);
+
 		}
 	}
 }

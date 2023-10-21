@@ -27,15 +27,15 @@ public class Q7 {
         Configuration conf = HBaseConfiguration.create();
         Connection connection = ConnectionFactory.createConnection(conf);
 
-       TableName hbaseTableName = TableName.valueOf("Covid19tweets"); // Replace with your table name
-       Table hbaseTable = connection.getTable(hbaseTableName);
+       TableName tableName = TableName.valueOf("Covid19tweets"); // Replace with your table name
+       Table table = connection.getTable(tableName);
 
         int tweetcount =0;
         byte[] Tweets = Bytes.toBytes("Tweets");
         byte[] text = Bytes.toBytes("text");
      //   Table table = connection.getTable(tableName);
         Scan scantweet = new Scan();
-        ResultScanner scannertweet = hbaseTable.getScanner(scantweet);
+        ResultScanner scannertweet = table.getScanner(scantweet);
         for (Result result : scannertweet) {   
             NavigableMap<byte[], byte[]> tweetMap = result.getFamilyMap(Tweets);
             String tweetText = Bytes.toString(tweetMap.get(text));
@@ -63,7 +63,7 @@ public class Q7 {
         );
         scan2.setFilter(filter);
 
-        ResultScanner scanner1 = hbaseTable.getScanner(scan2);
+        ResultScanner scanner1 = table.getScanner(scan2);
         
         int vc =0;
         int nvc = 0;

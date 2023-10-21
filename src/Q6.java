@@ -58,7 +58,8 @@ public class Q6 {
             String verifiedStatus = Bytes.toString(CellUtil.cloneValue(user_verified));
             if (nameCell != null) {
                 
-                System.out.println("User Name: " + userName + " followers " + followersCount);
+                System.out.println("Popular username: " + userName + ", and their followers count " + followersCount);
+
                 
                 if(verifiedStatus.equalsIgnoreCase("TRUE")) {
                 	verifiedCount++;
@@ -70,6 +71,7 @@ public class Q6 {
         
         }
         
-        System.out.println("Popular Verified user count: " + verifiedCount + " Popular Non verified user count: " + notVerifiedCount);
+                System.out.println("Popular Verified user count: " + verifiedCount + " Popular Non verified user count: " + notVerifiedCount);
+
         }
 }
