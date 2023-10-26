@@ -55,18 +55,18 @@ public class Q5 {
            }
        
        	}
-       System.out.println("Users with Special Characters: ");
+       System.out.println("Users with Special Characters are: ");
        for (String user : usersWithSpecialCharacters) {
            System.out.println("User with special character: "+user);
        }
 
-       System.out.println("Total Users with Special Characters: " + usersWithSpecialCharacters.size());
+       System.out.println("Total number of Users with Special Characters are: " + usersWithSpecialCharacters.size());
 
-       System.out.println("Users with Special Characters and verified: ");
+       System.out.println("Users with Special Characters and verified are: ");
        for (String user : usersWithSpecialCharactersVerified) {
-           System.out.println("Verified user with special character: "+user);
+           System.out.println("Verified user with special character are: "+user);
        }
-       System.out.println("Total Users with Special Characters and verified: " + usersWithSpecialCharactersVerified.size());
+       System.out.println("Total number of Users with Special Characters and verified are: " + usersWithSpecialCharactersVerified.size());
        
     	}
     }

@@ -31,11 +31,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 
 public class InsertData  extends Configured implements Tool{
-
-	private static String handleSpecialCharacters(String column) {
-        // Replace any backslash with double backslash
-        return column.replace("\\", "\\\\");
-    }
   
 public String Table_Name = "Covid19tweets";
 @SuppressWarnings("deprecation")
@@ -45,9 +40,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
     
     try (Connection connection = ConnectionFactory.createConnection(conf);
             Admin admin = connection.getAdmin()) {
-    @SuppressWarnings("resource")
-//	HBaseAdmin admin=new HBaseAdmin(conf);        
-    
+    @SuppressWarnings("resource")    
    
     TableName tableName = TableName.valueOf(Table_Name);
 //    boolean isExists = admin.tableExists(Table_Name);
@@ -71,9 +64,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
     		CSVReader csvReader = new CSVReaderBuilder(new FileReader("covid19_tweets.csv"))
             .withSkipLines(1)
             .withCSVParser(new CSVParserBuilder()
-                    // Set the separator (comma)
-                     // Set the text qualifier (double-quote)
-                    .withEscapeChar('\\') // Set the escape character (backslash)
+                    .withEscapeChar('\\')
                     .build())
                 .build()){
 
@@ -81,30 +72,19 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 
 	    int row_count=0;
         while ((line = csvReader.readNext()) != null) {
-        	   String joinedLine = String.join(" ", line);
         	   
-        	   //System.out.println(joinedLine);
         	if(line.length == 0)continue;
         
-            // Loop through the columns in each row
-    /*      for (String column : line) {
-        	  String cleanedColumn = handleSpecialCharacters(column);
-              
-          System.out.print(cleanedColumn + "&5&");
-       } */
-            //	System.out.println();
+
 	    	
 	    	row_count++;
 	    	
-	  //  System.out.println("+++++++++++++++++++++++++++++"+line.toString());
 	    	try {
 		    	String user_name = (line[0] != null) ? line[0] : "";
 		    	String user_location =(line[1] != null) ? line[1] : ""; 
 		    	String user_description = (line[2] != null) ? line[2] : "";
 		    	String user_created = (line[3] != null) ? line[3] : "";
-		    	//System.out.println(user_name + "&&&" + "$$$"  + user_location + "&&&" + user_description);
-		    	//System.out.println("%%" +  user_created);
-		    	//String user_created = line[3];
+
 		    	int user_followers = (line[4] != null) ? (Integer.parseInt(line[4].trim())) : 0;
 		    	int user_friends = (line[5] != null) ? Integer.parseInt(line[5].trim()) : 0;
 		    	int user_favourites = (line[6] != null) ? Integer.parseInt(line[6].trim()) : 0;
@@ -116,12 +96,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 		    	
 		    	String source = (line[11] != null) ? line[11] : "";
 		    	String date = (line[8] != null) ? line[8] : "";
-		    	
-
-		    	//String xyz = user_name + "&&&" + user_location + "&&&" + user_description + "&&&"  + user_created + "&&&" + user_followers + "&&&" + "&&&" + user_verified
-		    			//+ "&&&" + date + "&&& " + text + "&&&" + hashtags + "&&&" + source + "&&&" + is_retweet;
-		    	//System.out.println(xyz);
-		    	//initialize a put with row key as tweet_url
+		    
 	            Put put = new Put(Bytes.toBytes(row_count));
 	            
 	            //add column data one after one
