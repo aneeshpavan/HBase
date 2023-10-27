@@ -43,11 +43,9 @@ public int run(String[] argv) throws IOException, CsvValidationException {
     @SuppressWarnings("resource")    
    
     TableName tableName = TableName.valueOf(Table_Name);
-//    boolean isExists = admin.tableExists(Table_Name);
     boolean isExists = admin.tableExists(tableName);
     
     if(isExists == false) {
-        //create table with column family
         HTableDescriptor htb=new HTableDescriptor(Table_Name);
         HColumnDescriptor UsersFamily = new HColumnDescriptor("Users");
         HColumnDescriptor TweetsFamily = new HColumnDescriptor("Tweets");
@@ -63,9 +61,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
     try(Table table = connection.getTable(tableName);
     		CSVReader csvReader = new CSVReaderBuilder(new FileReader("covid19_tweets.csv"))
             .withSkipLines(1)
-            .withCSVParser(new CSVParserBuilder()
-                    .withEscapeChar('\\')
-                    .build())
+            .withCSVParser(new CSVParserBuilder().build())
                 .build()){
 
         String[] line;
@@ -74,11 +70,7 @@ public int run(String[] argv) throws IOException, CsvValidationException {
         while ((line = csvReader.readNext()) != null) {
         	   
         	if(line.length == 0)continue;
-        
-
-	    	
-	    	row_count++;
-	    	
+        	    	
 	    	try {
 		    	String user_name = (line[0] != null) ? line[0] : "";
 		    	String user_location =(line[1] != null) ? line[1] : ""; 
@@ -99,7 +91,6 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 		    
 	            Put put = new Put(Bytes.toBytes(row_count));
 	            
-	            //add column data one after one
 	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_name"), Bytes.toBytes(user_name));
 	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_location"), Bytes.toBytes(user_location));
 	            put.addColumn(Bytes.toBytes("Users"), Bytes.toBytes("user_description"), Bytes.toBytes(user_description));
@@ -116,26 +107,23 @@ public int run(String[] argv) throws IOException, CsvValidationException {
 	            put.addColumn(Bytes.toBytes("Extra"), Bytes.toBytes("source"), Bytes.toBytes(source));
 	          put.addColumn(Bytes.toBytes("Extra"), Bytes.toBytes("date"), Bytes.toBytes(date));
 	            
-	            //add the put in the table
-//		    	HTable hTable = new HTable(conf, Table_Name);
+
 		    	table.put(put);
-		    	if(row_count % 1000 == 0) System.out.println("Inserted Rows: "+ row_count);
+		    	row_count++;
+		    	if(row_count % 10000 == 0) System.out.println("Inserted Rows: "+ row_count);
  	    	}catch (ArrayIndexOutOfBoundsException e) {
 	    		System.out.println("On Row: Arrayexcept" + row_count + " First Element:" + line[0]);
 	    	} catch (NumberFormatException e) { 
 	    		System.out.println("On Row: " + row_count + " First Element:" + line[0]);
-	    		row_count ++;
 	    	} catch (FileNotFoundException e) {
-	        	// TODO Auto-generated catch block
 	        	e.printStackTrace();
 	        } catch (IOException e) {
-	        	// TODO Auto-generated catch block
 	        	e.printStackTrace();
 	        }
 	    	table.close(); 
 	      	}
     		System.out.println("Inserted Row: "+ row_count);
-    		System.out.println("Inserte all rows");
+    		System.out.println("Inserted all rows");
         }
     } catch (IOException e) {
         e.printStackTrace();

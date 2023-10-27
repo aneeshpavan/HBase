@@ -27,12 +27,10 @@ public class Q4 {
         Configuration conf = HBaseConfiguration.create();
         Connection connection = ConnectionFactory.createConnection(conf);
 
-       TableName hbaseTableName = TableName.valueOf("Covid19tweets"); // Replace with your table name
+       TableName hbaseTableName = TableName.valueOf("Covid19tweets");
        Table hbaseTable = connection.getTable(hbaseTableName);
  
- //----------------------------------------------------------------------------2-------------------------------------------------
         
-     // Define the column family and qualifier for "user_created" column
         byte[] family = Bytes.toBytes("Users");
         byte[] qualifier = Bytes.toBytes("user_created");
         byte[] verified = Bytes.toBytes("user_verified");
@@ -90,7 +88,7 @@ public class Q4 {
         System.out.println("-----------------------------------------------------------------------------------------------------------------");
 
         for (Map.Entry<String, Integer> entry : userCountOf2020Verified.entrySet()) {
-            System.out.println("Number of verifieed users created in year 2020 in Month " + entry.getKey() + " : " + entry.getValue());
+            System.out.println("Number of verified users created in year 2020 in Month " + entry.getKey() + " : " + entry.getValue());
         }
                 
         }

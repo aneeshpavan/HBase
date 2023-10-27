@@ -27,7 +27,7 @@ public class Q6 {
         Configuration conf = HBaseConfiguration.create();
         Connection connection = ConnectionFactory.createConnection(conf);
 
-       TableName hbaseTableName = TableName.valueOf("Covid19tweets"); // Replace with your table name
+       TableName hbaseTableName = TableName.valueOf("Covid19tweets");
        Table hbaseTable = connection.getTable(hbaseTableName);
 
         Scan scan2 = new Scan();

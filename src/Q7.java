@@ -27,20 +27,18 @@ public class Q7 {
         Configuration conf = HBaseConfiguration.create();
         Connection connection = ConnectionFactory.createConnection(conf);
 
-       TableName tableName = TableName.valueOf("Covid19tweets"); // Replace with your table name
+       TableName tableName = TableName.valueOf("Covid19tweets");
        Table table = connection.getTable(tableName);
 
         int tweetcount =0;
         byte[] Tweets = Bytes.toBytes("Tweets");
         byte[] text = Bytes.toBytes("text");
-     //   Table table = connection.getTable(tableName);
         Scan scantweet = new Scan();
         ResultScanner scannertweet = table.getScanner(scantweet);
         for (Result result : scannertweet) {   
             NavigableMap<byte[], byte[]> tweetMap = result.getFamilyMap(Tweets);
             String tweetText = Bytes.toString(tweetMap.get(text));
            String tt =  (String) tweetText.subSequence(0, 8);
-        //  System.out.println(tt);
             if((tt.toLowerCase()).equals("#covid19")) {
             	System.out.println(tweetText);
             	tweetcount++;
